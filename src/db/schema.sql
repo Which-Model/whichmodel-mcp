@@ -50,24 +50,28 @@ ALTER TABLE models ENABLE ROW LEVEL SECURITY;
 ALTER TABLE price_history ENABLE ROW LEVEL SECURITY;
 
 -- Read access for anon
-CREATE POLICY IF NOT EXISTS "Allow anon read models"
+DROP POLICY IF EXISTS "Allow anon read models" ON models;
+CREATE POLICY "Allow anon read models"
   ON models FOR SELECT
   TO anon
   USING (true);
 
-CREATE POLICY IF NOT EXISTS "Allow anon read price_history"
+DROP POLICY IF EXISTS "Allow anon read price_history" ON price_history;
+CREATE POLICY "Allow anon read price_history"
   ON price_history FOR SELECT
   TO anon
   USING (true);
 
 -- Full access for service role (pipeline scripts)
-CREATE POLICY IF NOT EXISTS "Allow service role all on models"
+DROP POLICY IF EXISTS "Allow service role all on models" ON models;
+CREATE POLICY "Allow service role all on models"
   ON models FOR ALL
   TO service_role
   USING (true)
   WITH CHECK (true);
 
-CREATE POLICY IF NOT EXISTS "Allow service role all on price_history"
+DROP POLICY IF EXISTS "Allow service role all on price_history" ON price_history;
+CREATE POLICY "Allow service role all on price_history"
   ON price_history FOR ALL
   TO service_role
   USING (true)
