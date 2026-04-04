@@ -1,0 +1,11 @@
+name = "routewise-mcp"
+main = "src/worker.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Environment variables — set via `wrangler secret put` or the Cloudflare dashboard
+# SUPABASE_URL = "https://xxx.supabase.co"
+# SUPABASE_ANON_KEY = "eyJ..."
+
+[observability]
+enabled = true

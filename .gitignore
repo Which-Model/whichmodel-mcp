@@ -1,7 +1,10 @@
 node_modules/
 dist/
+dist-worker/
 .env
+.dev.vars
 *.db
 *.db-journal
 .DS_Store
 coverage/
+.wrangler/
