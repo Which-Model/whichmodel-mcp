@@ -16,12 +16,24 @@ import { registerGetPricing } from './tools/get-pricing.js';
 import { registerCheckPriceChanges } from './tools/check-price-changes.js';
 import { getDataFreshness } from './db/models.js';
 import { authMiddleware } from './middleware/auth.js';
+import { handleSignup } from './routes/auth.js';
+import { handleCreateCheckout, handleWebhook, handleBillingPortal } from './routes/billing.js';
+import { handleGetUsage } from './routes/keys.js';
+import { LANDING_HTML } from './landing.js';
 
 export interface Env {
   SUPABASE_URL: string;
   SUPABASE_ANON_KEY: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
   API_KEYS: KVNamespace;
+  // Stripe
+  STRIPE_SECRET_KEY: string;
+  STRIPE_WEBHOOK_SECRET: string;
+  STRIPE_DEVELOPER_PRICE_ID: string;
+  STRIPE_TEAM_PRICE_ID: string;
+  // Resend (optional — signup email skipped if absent)
+  RESEND_API_KEY?: string;
+  APP_BASE_URL?: string;
 }
 
 function createSupabaseClient(env: Env): SupabaseClient {
@@ -57,6 +69,14 @@ export default {
     // ── CORS preflight ──
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
+    }
+
+    // ── Landing page ──
+    if ((url.pathname === '/' || url.pathname === '') && request.method === 'GET') {
+      return new Response(LANDING_HTML, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      });
     }
 
     // ── Health endpoint ──
@@ -105,6 +125,41 @@ export default {
         },
         { headers: CORS_HEADERS },
       );
+    }
+
+    // ── Signup ──
+    if (url.pathname === '/auth/signup' && request.method === 'POST') {
+      const response = await handleSignup(request, env);
+      const headers = new Headers(response.headers);
+      for (const [k, v] of Object.entries(CORS_HEADERS)) headers.set(k, v);
+      return new Response(response.body, { status: response.status, headers });
+    }
+
+    // ── Billing: create Checkout session ──
+    if (url.pathname === '/billing/create-checkout' && request.method === 'POST') {
+      const response = await handleCreateCheckout(request, env);
+      const headers = new Headers(response.headers);
+      for (const [k, v] of Object.entries(CORS_HEADERS)) headers.set(k, v);
+      return new Response(response.body, { status: response.status, headers });
+    }
+
+    // ── Billing: Stripe webhook ──
+    if (url.pathname === '/billing/webhook' && request.method === 'POST') {
+      // No CORS needed — Stripe calls this server-side
+      return handleWebhook(request, env);
+    }
+
+    // ── Billing: Customer Portal redirect ──
+    if (url.pathname === '/billing/portal' && request.method === 'GET') {
+      return handleBillingPortal(request, env);
+    }
+
+    // ── Keys: usage ──
+    if (url.pathname === '/keys/usage' && request.method === 'GET') {
+      const response = await handleGetUsage(request, env);
+      const headers = new Headers(response.headers);
+      for (const [k, v] of Object.entries(CORS_HEADERS)) headers.set(k, v);
+      return new Response(response.body, { status: response.status, headers });
     }
 
     // ── MCP endpoint ──
