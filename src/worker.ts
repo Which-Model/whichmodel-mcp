@@ -15,10 +15,13 @@ import { registerCompareModels } from './tools/compare-models.js';
 import { registerGetPricing } from './tools/get-pricing.js';
 import { registerCheckPriceChanges } from './tools/check-price-changes.js';
 import { getDataFreshness } from './db/models.js';
+import { authMiddleware } from './middleware/auth.js';
 
 export interface Env {
   SUPABASE_URL: string;
   SUPABASE_ANON_KEY: string;
+  SUPABASE_SERVICE_ROLE_KEY: string;
+  API_KEYS: KVNamespace;
 }
 
 function createSupabaseClient(env: Env): SupabaseClient {
@@ -43,7 +46,7 @@ function createRouteWiseServer(supabase: SupabaseClient): McpServer {
 const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, mcp-session-id, Last-Event-ID, mcp-protocol-version',
+  'Access-Control-Allow-Headers': 'Content-Type, mcp-session-id, Last-Event-ID, mcp-protocol-version, Authorization',
   'Access-Control-Expose-Headers': 'mcp-session-id, mcp-protocol-version',
 };
 
@@ -106,6 +109,21 @@ export default {
 
     // ── MCP endpoint ──
     if (url.pathname === '/mcp') {
+      // Auth middleware: validates API key if present, enforces per-key limits.
+      // Unauthenticated requests pass through (free tier, IP-based rate limiting).
+      const authError = await authMiddleware(request, env);
+      if (authError) {
+        // Add CORS headers so browser clients see the error body
+        const headers = new Headers(authError.headers);
+        for (const [k, v] of Object.entries(CORS_HEADERS)) {
+          headers.set(k, v);
+        }
+        return new Response(authError.body, {
+          status: authError.status,
+          headers,
+        });
+      }
+
       try {
         const supabase = createSupabaseClient(env);
         const transport = new WebStandardStreamableHTTPServerTransport();
