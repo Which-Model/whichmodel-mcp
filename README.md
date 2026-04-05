@@ -1,4 +1,4 @@
-# routewise-mcp
+# whichmodel-mcp
 
 > A model routing advisor for autonomous agents — get cost-optimised LLM recommendations via MCP.
 
