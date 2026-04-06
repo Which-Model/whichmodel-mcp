@@ -2,6 +2,7 @@
   "name": "routewise-mcp",
   "version": "0.1.0",
   "description": "MCP server that provides cost-optimised model recommendations for autonomous agents",
+  "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
