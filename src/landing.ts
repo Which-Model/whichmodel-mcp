@@ -351,7 +351,7 @@ export const LANDING_HTML = `<!DOCTYPE html>
     <div>
       <a href="#pricing" class="nav-link">Pricing</a>
       <a href="#get-key" class="nav-link">Get API Key</a>
-      <a href="https://github.com/simonamsharp/routewise-mcp" class="nav-link">GitHub</a>
+      <a href="https://github.com/Which-Model/whichmodel-mcp" class="nav-link">GitHub</a>
     </div>
   </div>
 </nav>
@@ -515,7 +515,7 @@ export const LANDING_HTML = `<!DOCTYPE html>
   <div class="container">
     <span>© 2025 WhichModel</span>
     <span>
-      <a href="https://github.com/simonamsharp/routewise-mcp">GitHub</a> ·
+      <a href="https://github.com/Which-Model/whichmodel-mcp">GitHub</a> ·
       <a href="mailto:hello@whichmodel.dev">Contact</a>
     </span>
   </div>

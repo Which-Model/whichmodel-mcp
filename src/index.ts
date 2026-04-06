@@ -4,7 +4,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { getSupabaseClient } from './db/client.js';
 import { getDataFreshness } from './db/models.js';
-import { createRouteWiseServer } from './server.js';
+import { createWhichModelServer } from './server.js';
 import { createRateLimiter } from './middleware/rate-limit.js';
 import type { Request, Response } from 'express';
 
@@ -49,7 +49,7 @@ app.get('/.well-known/mcp.json', (_req: Request, res: Response) => {
   res.json({
     mcp: {
       server: {
-        name: 'routewise',
+        name: 'whichmodel',
         version: '0.1.0',
         description:
           'Cost-optimised model routing advisor for autonomous agents. ' +
@@ -112,7 +112,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
       };
 
       // Create a fresh server for this session and connect
-      const server = createRouteWiseServer(supabase);
+      const server = createWhichModelServer(supabase);
       await server.connect(transport);
       await transport.handleRequest(req, res, req.body);
       return;
@@ -169,7 +169,7 @@ app.delete('/mcp', async (req: Request, res: Response) => {
 
 // ── Start server ──
 app.listen(PORT, () => {
-  console.log(`RouteWise MCP server listening on ${HOST}:${PORT}`);
+  console.log(`WhichModel MCP server listening on ${HOST}:${PORT}`);
   console.log(`Health check: http://${HOST}:${PORT}/health`);
   console.log(`MCP endpoint: http://${HOST}:${PORT}/mcp`);
 });

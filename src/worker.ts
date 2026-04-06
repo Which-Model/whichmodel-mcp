@@ -1,5 +1,5 @@
 /**
- * RouteWise MCP Server — Cloudflare Workers entry point.
+ * WhichModel MCP Server — Cloudflare Workers entry point.
  *
  * Stateless: creates a fresh McpServer + WebStandard transport per request.
  * This is the recommended pattern for serverless/edge deployments.
@@ -40,9 +40,9 @@ function createSupabaseClient(env: Env): SupabaseClient {
   return createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY);
 }
 
-function createRouteWiseServer(supabase: SupabaseClient): McpServer {
+function createWhichModelServer(supabase: SupabaseClient): McpServer {
   const server = new McpServer({
-    name: 'routewise',
+    name: 'whichmodel',
     version: '0.1.0',
   });
 
@@ -107,7 +107,7 @@ export default {
         {
           mcp: {
             server: {
-              name: 'routewise',
+              name: 'whichmodel',
               version: '0.1.0',
               description:
                 'Cost-optimised model routing advisor for autonomous agents. ' +
@@ -182,7 +182,7 @@ export default {
       try {
         const supabase = createSupabaseClient(env);
         const transport = new WebStandardStreamableHTTPServerTransport();
-        const server = createRouteWiseServer(supabase);
+        const server = createWhichModelServer(supabase);
         await server.connect(transport);
 
         const response = await transport.handleRequest(request);

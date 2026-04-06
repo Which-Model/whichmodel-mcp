@@ -47,12 +47,12 @@ npm run deploy
 
 Test an unauthenticated request (should still work, free tier):
 ```sh
-curl https://routewise-mcp.<your-subdomain>.workers.dev/health
+curl https://whichmodel-mcp.<your-subdomain>.workers.dev/health
 ```
 
 Test a revoked/invalid key (should return 401):
 ```sh
-curl -H "Authorization: Bearer wm_live_invalidkey" https://routewise-mcp.<your-subdomain>.workers.dev/mcp \
+curl -H "Authorization: Bearer wm_live_invalidkey" https://whichmodel-mcp.<your-subdomain>.workers.dev/mcp \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
 ```

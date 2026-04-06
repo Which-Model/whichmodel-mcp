@@ -9,9 +9,9 @@ import { registerCheckPriceChanges } from './tools/check-price-changes.js';
  * Create a new McpServer instance with all tools registered.
  * Each session gets its own server instance (per SDK pattern).
  */
-export function createRouteWiseServer(supabase: SupabaseClient): McpServer {
+export function createWhichModelServer(supabase: SupabaseClient): McpServer {
   const server = new McpServer({
-    name: 'routewise',
+    name: 'whichmodel',
     version: '0.1.0',
   });
 

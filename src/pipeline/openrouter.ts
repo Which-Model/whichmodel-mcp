@@ -10,7 +10,7 @@ export async function fetchOpenRouterModels(): Promise<OpenRouterModel[]> {
   const response = await fetch(OPENROUTER_API_URL, {
     headers: {
       'Accept': 'application/json',
-      'User-Agent': 'RouteWise-MCP/0.1.0',
+      'User-Agent': 'WhichModel-MCP/0.1.0',
     },
   });
 
