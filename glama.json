@@ -2,7 +2,7 @@
   "$schema": "https://glama.ai/mcp/schemas/server.json",
   "name": "whichmodel-mcp",
   "description": "Cost-optimised model routing advisor for autonomous agents. Query real-time pricing and capabilities across 100+ LLM models to get recommendations based on task type, budget, and requirements.",
-  "repository": "https://github.com/simonamsharp/whichmodel-mcp",
+  "repository": "https://github.com/Which-Model/whichmodel-mcp",
   "homepage": "https://whichmodel.dev",
   "maintainers": [
     "simonamsharp",
