@@ -7,25 +7,25 @@
  * The engine code (recommendation, scoring, task profiles) is identical
  * to the Express version — only the transport layer differs.
  */
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { registerRecommendModel } from './tools/recommend-model.js';
-import { registerCompareModels } from './tools/compare-models.js';
-import { registerGetPricing } from './tools/get-pricing.js';
-import { registerCheckPriceChanges } from './tools/check-price-changes.js';
+import { createWhichModelServer } from './server.js';
 import { getDataFreshness } from './db/models.js';
+import { runPricingPipeline } from './pipeline/run-pipeline.js';
+import { runNewModelScan } from './pipeline/new-model-scan.js';
 import { authMiddleware } from './middleware/auth.js';
 import { handleSignup } from './routes/auth.js';
 import { handleCreateCheckout, handleWebhook, handleBillingPortal } from './routes/billing.js';
 import { handleGetUsage } from './routes/keys.js';
 import { LANDING_HTML } from './landing.js';
+import { QueryCache } from './cache.js';
 
 export interface Env {
   SUPABASE_URL: string;
   SUPABASE_ANON_KEY: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
   API_KEYS: KVNamespace;
+  QUERY_CACHE: KVNamespace;
   // Stripe
   STRIPE_SECRET_KEY: string;
   STRIPE_WEBHOOK_SECRET: string;
@@ -40,20 +40,6 @@ function createSupabaseClient(env: Env): SupabaseClient {
   return createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY);
 }
 
-function createWhichModelServer(supabase: SupabaseClient): McpServer {
-  const server = new McpServer({
-    name: 'whichmodel',
-    version: '0.1.0',
-  });
-
-  registerRecommendModel(server, supabase);
-  registerCompareModels(server, supabase);
-  registerGetPricing(server, supabase);
-  registerCheckPriceChanges(server, supabase);
-
-  return server;
-}
-
 // CORS headers for MCP clients
 const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
@@ -62,7 +48,38 @@ const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Expose-Headers': 'mcp-session-id, mcp-protocol-version',
 };
 
+function createServiceSupabaseClient(env: Env): SupabaseClient {
+  return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
 export default {
+  async scheduled(event: { cron?: string }, env: Env, ctx: { waitUntil(p: Promise<unknown>): void }): Promise<void> {
+    const supabase = createServiceSupabaseClient(env);
+    const isFullPipeline = event.cron === '0 */4 * * *';
+
+    if (isFullPipeline) {
+      const result = await runPricingPipeline(supabase);
+      if (result.alerts.length > 0) {
+        console.warn(
+          `Scheduled pipeline completed with ${result.alerts.length} alert(s): ` +
+          result.alerts.join('; '),
+        );
+      }
+      console.log(
+        `Scheduled pipeline done: ${result.updated} updated, ` +
+        `${result.priceChanges} price changes, ${result.newModels} new models`,
+      );
+    } else {
+      const result = await runNewModelScan(supabase);
+      if (result.alerts.length > 0) {
+        console.warn(`New-model scan alerts: ${result.alerts.join('; ')}`);
+      }
+      console.log(
+        `New-model scan done: scanned ${result.scanned} models, found ${result.newModels.length} new`,
+      );
+    }
+  },
+
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
@@ -181,8 +198,9 @@ export default {
 
       try {
         const supabase = createSupabaseClient(env);
+        const cache = new QueryCache(env.QUERY_CACHE);
         const transport = new WebStandardStreamableHTTPServerTransport();
-        const server = createWhichModelServer(supabase);
+        const server = createWhichModelServer(supabase, cache);
         await server.connect(transport);
 
         const response = await transport.handleRequest(request);

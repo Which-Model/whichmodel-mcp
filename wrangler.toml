@@ -21,5 +21,15 @@ compatibility_flags = ["nodejs_compat"]
 binding = "API_KEYS"
 id = "e3a172189e1c4f50af2828011063be98"
 
+# KV namespace for query result caching (tool responses, 15min–1hr TTL)
+# Create with: wrangler kv namespace create QUERY_CACHE
+# Then replace __QUERY_CACHE_NAMESPACE_ID__ below with the id printed by that command.
+[[kv_namespaces]]
+binding = "QUERY_CACHE"
+id = "__QUERY_CACHE_NAMESPACE_ID__"
+
+[triggers]
+crons = ["0 */4 * * *", "30 1-3,5-7,9-11,13-15,17-19,21-23 * * *"]  # full pipeline every 4h at :00; new-model scan at :30 on non-full-pipeline hours
+
 [observability]
 enabled = true
