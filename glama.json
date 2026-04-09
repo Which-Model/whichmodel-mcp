@@ -1,7 +1,33 @@
 {
   "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "name": "whichmodel-mcp",
+  "description": "Cost-optimised model routing advisor for autonomous agents. Query real-time pricing and capabilities across 100+ LLM models to get recommendations based on task type, budget, and requirements.",
+  "repository": "https://github.com/Which-Model/whichmodel-mcp",
+  "homepage": "https://whichmodel.dev",
   "maintainers": [
     "simonamsharp",
     "Which-Model"
+  ],
+  "categories": [
+    "AI",
+    "Developer Tools"
+  ],
+  "tools": [
+    {
+      "name": "recommend_model",
+      "description": "Get a cost-optimised model recommendation for a specific task type, complexity, and budget."
+    },
+    {
+      "name": "compare_models",
+      "description": "Head-to-head comparison of 2-5 models with optional volume cost projections."
+    },
+    {
+      "name": "get_pricing",
+      "description": "Raw pricing data lookup with filters by model, provider, price ceiling, and capabilities."
+    },
+    {
+      "name": "check_price_changes",
+      "description": "See what model pricing has changed since a given date."
+    }
   ]
 }
