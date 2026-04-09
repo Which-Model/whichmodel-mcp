@@ -13,6 +13,8 @@ compatibility_flags = ["nodejs_compat"]
 #   wrangler secret put STRIPE_TEAM_PRICE_ID
 #   wrangler secret put RESEND_API_KEY           (optional — welcome email)
 #   wrangler secret put APP_BASE_URL             (optional — defaults to https://whichmodel.dev)
+#   wrangler secret put TELEGRAM_BOT_TOKEN       (optional — Telegram bot integration)
+#   wrangler secret put TELEGRAM_WEBHOOK_SECRET  (optional — validates Telegram webhook calls)
 
 # KV namespace for API key cache (sha256(key) → {key_id, plan, monthly_limit, revoked}, 5-min TTL)
 # Create with: wrangler kv namespace create API_KEYS

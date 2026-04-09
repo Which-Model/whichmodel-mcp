@@ -22,6 +22,9 @@ import { LANDING_HTML } from './landing.js';
 import { QueryCache } from './cache.js';
 import { ToolTracker } from './observability.js';
 import { renderDashboardHTML } from './dashboard.js';
+import { handleTelegramWebhook } from './telegram/webhook.js';
+import { notifyPriceChanges, notifyNewModels, notifyDeprecations } from './telegram/notifications.js';
+import { getPriceChangesSince } from './db/price-history.js';
 
 export interface Env {
   SUPABASE_URL: string;
@@ -40,6 +43,9 @@ export interface Env {
   APP_BASE_URL?: string;
   // OpenRouter API key for capability smoke tests
   OPENROUTER_API_KEY?: string;
+  // Telegram bot
+  TELEGRAM_BOT_TOKEN?: string;
+  TELEGRAM_WEBHOOK_SECRET?: string;
 }
 
 function createSupabaseClient(env: Env): SupabaseClient {
@@ -99,6 +105,30 @@ export default {
         `Scheduled pipeline done: ${result.updated} updated, ` +
         `${result.priceChanges} price changes, ${result.newModels} new models`,
       );
+
+      // Send Telegram notifications (best-effort, non-blocking)
+      if (env.TELEGRAM_BOT_TOKEN && (result.priceChanges > 0 || result.newModels > 0 || result.deprecated > 0)) {
+        ctx.waitUntil((async () => {
+          try {
+            // Get price changes from the last 4 hours (this pipeline interval)
+            const since = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
+            const changes = await getPriceChangesSince(supabase, since);
+            const priceOnly = changes.filter((c) => c.change_type !== 'new_model');
+            const newModelIds = changes.filter((c) => c.change_type === 'new_model').map((c) => c.model_id);
+
+            if (priceOnly.length > 0) {
+              await notifyPriceChanges(supabase, env.TELEGRAM_BOT_TOKEN!, priceOnly);
+            }
+            if (newModelIds.length > 0) {
+              await notifyNewModels(supabase, env.TELEGRAM_BOT_TOKEN!, newModelIds);
+            }
+            // Deprecated models are tracked in pipeline alerts
+            // TODO: Extract deprecated model IDs from pipeline result for deprecation notifications
+          } catch (err) {
+            console.error('Telegram notification error (pipeline):', err);
+          }
+        })());
+      }
     } else if (isSmokeTest) {
       if (!env.OPENROUTER_API_KEY) {
         console.warn('Capability smoke tests skipped: OPENROUTER_API_KEY not set');
@@ -120,6 +150,14 @@ export default {
       console.log(
         `New-model scan done: scanned ${result.scanned} models, found ${result.newModels.length} new`,
       );
+
+      // Notify about new models (best-effort)
+      if (env.TELEGRAM_BOT_TOKEN && result.newModels.length > 0) {
+        ctx.waitUntil(
+          notifyNewModels(supabase, env.TELEGRAM_BOT_TOKEN, result.newModels)
+            .catch((err) => console.error('Telegram notification error (new-model scan):', err)),
+        );
+      }
     }
   },
 
@@ -320,6 +358,21 @@ export default {
           { status: 500, headers: CORS_HEADERS },
         );
       }
+    }
+
+    // ── Telegram webhook ──
+    if (url.pathname.startsWith('/telegram/webhook') && request.method === 'POST') {
+      if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_WEBHOOK_SECRET) {
+        return Response.json(
+          { error: 'Telegram bot not configured' },
+          { status: 503 },
+        );
+      }
+      const supabase = createServiceSupabaseClient(env);
+      return handleTelegramWebhook(request, supabase, {
+        TELEGRAM_BOT_TOKEN: env.TELEGRAM_BOT_TOKEN,
+        TELEGRAM_WEBHOOK_SECRET: env.TELEGRAM_WEBHOOK_SECRET,
+      });
     }
 
     // ── MCP endpoint ──
