@@ -4,6 +4,63 @@
  * No external dependencies — works in any browser.
  */
 
+export function renderDashboardLoginHTML(): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WhichModel MCP — Dashboard Login</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f1117; color: #e1e4e8; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .login-box { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 32px; max-width: 380px; width: 100%; }
+  h1 { font-size: 1.25rem; margin-bottom: 4px; }
+  .subtitle { color: #8b949e; font-size: 0.875rem; margin-bottom: 24px; }
+  label { font-size: 0.8rem; color: #8b949e; display: block; margin-bottom: 6px; }
+  input { width: 100%; padding: 10px 12px; border: 1px solid #30363d; border-radius: 6px; background: #0d1117; color: #e1e4e8; font-size: 0.9rem; margin-bottom: 16px; }
+  input:focus { outline: none; border-color: #58a6ff; }
+  button { width: 100%; padding: 10px; background: #238636; color: #fff; border: none; border-radius: 6px; font-size: 0.9rem; cursor: pointer; font-weight: 600; }
+  button:hover { background: #2ea043; }
+  .error { color: #f85149; font-size: 0.8rem; margin-bottom: 12px; display: none; }
+</style>
+</head>
+<body>
+<div class="login-box">
+  <h1>WhichModel MCP</h1>
+  <div class="subtitle">Dashboard Login</div>
+  <form id="loginForm">
+    <label for="token">Dashboard Token</label>
+    <input type="password" id="token" name="token" placeholder="Enter your dashboard token" autofocus>
+    <div class="error" id="error">Invalid token. Please try again.</div>
+    <button type="submit">Sign In</button>
+  </form>
+</div>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const token = document.getElementById('token').value.trim();
+  if (!token) return;
+  // Verify token by hitting the dashboard-data endpoint
+  try {
+    const res = await fetch('/observability/dashboard-data?days=1', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      sessionStorage.setItem('dashboard_token', token);
+      window.location.href = '/dashboard?token=' + encodeURIComponent(token);
+    } else {
+      document.getElementById('error').style.display = 'block';
+    }
+  } catch {
+    document.getElementById('error').style.display = 'block';
+  }
+});
+</script>
+</body>
+</html>`;
+}
+
 export function renderDashboardHTML(baseUrl: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -78,13 +135,20 @@ export function renderDashboardHTML(baseUrl: string): string {
 
 <script>
 const BASE = '';
+const DASH_TOKEN = new URLSearchParams(window.location.search).get('token') || sessionStorage.getItem('dashboard_token') || '';
+const AUTH_HEADERS = DASH_TOKEN ? { 'Authorization': 'Bearer ' + DASH_TOKEN } : {};
 
 async function loadDashboard() {
   try {
     const [healthRes, dashRes] = await Promise.all([
       fetch(BASE + '/health'),
-      fetch(BASE + '/observability/dashboard-data?days=7'),
+      fetch(BASE + '/observability/dashboard-data?days=7', { headers: AUTH_HEADERS }),
     ]);
+    if (dashRes.status === 401) {
+      sessionStorage.removeItem('dashboard_token');
+      window.location.href = '/dashboard';
+      return;
+    }
     const health = await healthRes.json();
     const dash = await dashRes.json();
     renderHealth(health, dash);

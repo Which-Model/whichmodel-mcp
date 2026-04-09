@@ -21,7 +21,7 @@ import { handleGetUsage } from './routes/keys.js';
 import { LANDING_HTML } from './landing.js';
 import { QueryCache } from './cache.js';
 import { ToolTracker } from './observability.js';
-import { renderDashboardHTML } from './dashboard.js';
+import { renderDashboardHTML, renderDashboardLoginHTML } from './dashboard.js';
 import { handleTelegramWebhook } from './telegram/webhook.js';
 import { notifyPriceChanges, notifyNewModels, notifyDeprecations } from './telegram/notifications.js';
 import { getPriceChangesSince } from './db/price-history.js';
@@ -46,6 +46,8 @@ export interface Env {
   // Telegram bot
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_WEBHOOK_SECRET?: string;
+  // Dashboard auth (shared secret — protects /dashboard and /observability/*)
+  DASHBOARD_SECRET?: string;
 }
 
 function createSupabaseClient(env: Env): SupabaseClient {
@@ -62,6 +64,37 @@ const CORS_HEADERS: Record<string, string> = {
 
 function createServiceSupabaseClient(env: Env): SupabaseClient {
   return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+/**
+ * Validate dashboard access via DASHBOARD_SECRET.
+ * Checks Authorization: Bearer <token>, ?token= query param, or cookie.
+ * Returns null if allowed, or a 401 Response if denied.
+ */
+function checkDashboardAuth(request: Request, env: Env): Response | null {
+  if (!env.DASHBOARD_SECRET) {
+    // No secret configured — dashboard is open (backwards-compatible)
+    return null;
+  }
+
+  const url = new URL(request.url);
+  const secret = env.DASHBOARD_SECRET;
+
+  // Check Bearer token
+  const authHeader = request.headers.get('Authorization');
+  if (authHeader?.startsWith('Bearer ') && authHeader.slice(7).trim() === secret) {
+    return null;
+  }
+
+  // Check query param
+  if (url.searchParams.get('token') === secret) {
+    return null;
+  }
+
+  return new Response(
+    JSON.stringify({ error: 'Unauthorized. Provide a valid dashboard token.' }),
+    { status: 401, headers: { 'Content-Type': 'application/json' } },
+  );
 }
 
 /**
@@ -262,6 +295,14 @@ export default {
 
     // ── Dashboard (HTML) ──
     if (url.pathname === '/dashboard' && request.method === 'GET') {
+      const dashAuthErr = checkDashboardAuth(request, env);
+      if (dashAuthErr) {
+        // Show login form instead of raw 401 for the HTML page
+        return new Response(renderDashboardLoginHTML(), {
+          status: 200,
+          headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        });
+      }
       return new Response(renderDashboardHTML(url.origin), {
         status: 200,
         headers: { 'Content-Type': 'text/html; charset=utf-8', ...CORS_HEADERS },
@@ -270,6 +311,12 @@ export default {
 
     // ── Observability dashboard JSON (legacy single-day) ──
     if (url.pathname === '/observability/dashboard' && request.method === 'GET') {
+      const dashAuthErr = checkDashboardAuth(request, env);
+      if (dashAuthErr) {
+        const headers = new Headers(dashAuthErr.headers);
+        for (const [k, v] of Object.entries(CORS_HEADERS)) headers.set(k, v);
+        return new Response(dashAuthErr.body, { status: dashAuthErr.status, headers });
+      }
       try {
         const supabase = createSupabaseClient(env);
         const tracker = new ToolTracker(env.TOOL_METRICS);
@@ -313,6 +360,12 @@ export default {
 
     // ── Observability dashboard-data JSON (multi-day, for HTML dashboard) ──
     if (url.pathname === '/observability/dashboard-data' && request.method === 'GET') {
+      const dashAuthErr = checkDashboardAuth(request, env);
+      if (dashAuthErr) {
+        const headers = new Headers(dashAuthErr.headers);
+        for (const [k, v] of Object.entries(CORS_HEADERS)) headers.set(k, v);
+        return new Response(dashAuthErr.body, { status: dashAuthErr.status, headers });
+      }
       try {
         const tracker = new ToolTracker(env.TOOL_METRICS);
         const days = Math.min(parseInt(url.searchParams.get('days') ?? '7', 10) || 7, 30);
