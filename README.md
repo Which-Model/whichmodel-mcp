@@ -28,6 +28,23 @@ Add to your MCP client config:
 
 No API key required. No installation needed.
 
+### Stdio (local clients)
+
+For MCP clients that use stdio transport (Claude Desktop, Cursor, etc.):
+
+```json
+{
+  "mcpServers": {
+    "whichmodel": {
+      "command": "npx",
+      "args": ["-y", "whichmodel-mcp"]
+    }
+  }
+}
+```
+
+This runs a thin local proxy that forwards requests to the remote server.
+
 ## Tools
 
 ### `recommend_model`

@@ -5,6 +5,9 @@
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "whichmodel-mcp": "dist/cli.js"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
