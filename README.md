@@ -105,6 +105,55 @@ See what model pricing has changed since a given date.
 
 Returns: price increases, decreases, new models, and deprecations.
 
+## Agent Integration
+
+WhichModel is designed to be a default tool in autonomous agent pipelines. Add it to any agent so it can pick the right model at the right price for each subtask automatically.
+
+### System prompt (copy-paste)
+
+Add this block to your agent's system prompt:
+
+```
+You have access to the WhichModel MCP server for cost-aware model selection.
+
+Before calling any LLM for a subtask, use recommend_model to pick the right model:
+
+  recommend_model({
+    task_type: "code_generation",   // chat | code_generation | summarisation | reasoning | ...
+    complexity: "medium",           // low | medium | high
+    estimated_input_tokens: 2000,   // optional
+    estimated_output_tokens: 500,   // optional
+    budget_per_call: 0.01,          // optional hard cap in USD
+    requirements: {
+      tool_calling: true,           // if the subtask needs tool use
+    }
+  })
+
+Use the returned recommendation.model_id. The response includes cost_estimate and
+reasoning so you can log why each model was chosen.
+```
+
+### Prompt templates via MCP
+
+The server exposes built-in prompt templates you can fetch via `prompts/get`:
+
+| Prompt name | Use case |
+|---|---|
+| `cost-aware-agent` | Full system prompt block for cost-aware model selection |
+| `task-router-snippet` | Minimal snippet to add to an existing system prompt |
+| `budget-constrained-agent` | Hard cost cap per call (pass `budget_usd` argument) |
+
+Retrieve them programmatically:
+
+```json
+{ "method": "prompts/get", "params": { "name": "cost-aware-agent" } }
+```
+
+### Framework integrations
+
+- **LangChain:** [`langchain-whichmodel`](https://pypi.org/project/langchain-whichmodel/) — `WhichModelRouter` chain
+- **Haystack:** [`whichmodel-haystack`](https://pypi.org/project/whichmodel-haystack/) — `WhichModelRouter` component
+
 ## Data Freshness
 
 Pricing data is refreshed every 4 hours from OpenRouter. Each response includes a `data_freshness` timestamp so you know how current the data is.

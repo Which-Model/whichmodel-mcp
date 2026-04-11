@@ -6,6 +6,7 @@ import { registerGetPricing } from './tools/get-pricing.js';
 import { registerCheckPriceChanges } from './tools/check-price-changes.js';
 import { registerEstimateCost } from './tools/estimate-cost.js';
 import { registerFindCheapestCapable } from './tools/find-cheapest-capable.js';
+import { registerAgentPrompts } from './prompts/agent-integration.js';
 import type { QueryCache } from './cache.js';
 import type { ToolTracker } from './observability.js';
 
@@ -28,6 +29,7 @@ export function createWhichModelServer(supabase: SupabaseClient, cache?: QueryCa
   registerCheckPriceChanges(server, supabase, cache, tracker);
   registerEstimateCost(server, supabase, cache, tracker);
   registerFindCheapestCapable(server, supabase, cache, tracker);
+  registerAgentPrompts(server);
 
   return server;
 }
