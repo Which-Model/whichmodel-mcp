@@ -29,6 +29,14 @@
     {
       "name": "check_price_changes",
       "description": "Returns all LLM pricing changes recorded since a given date, optionally filtered to a specific model or provider. Each change record includes the old price, new price, model ID, and change timestamp. The since parameter accepts ISO date format (YYYY-MM-DD or full ISO timestamp, e.g. \"2026-04-01\"). Returns an empty changes array when no changes are found in the period. Use to monitor cost drift, detect newly added or deprecated models, or build price-change alerts. Check total_changes in the response to distinguish empty results from errors."
+    },
+    {
+      "name": "estimate_cost",
+      "description": "Estimates the cost of running a specific workload on a given model, with daily and monthly projections. Provide a model ID, input tokens per call, and output tokens per call; optionally add calls_per_day for volume projections. Returns cost per call, daily cost, monthly cost, and a comparison to the cheapest alternative model with equivalent capabilities. Use to validate a model choice against budget before committing to it. Use compare_models for side-by-side comparison of candidates."
+    },
+    {
+      "name": "find_cheapest_capable",
+      "description": "Finds the cheapest LLM models that meet specific hard capability requirements and a quality floor. Specify required capabilities (tool_calling, json_output, streaming, vision), an optional minimum context window, and an optional quality floor (low=budget+, medium=standard+, high=premium+, frontier=frontier only). Returns candidates sorted by ascending price. Use when you have non-negotiable constraints and want the most cost-effective option. Do not use for open-ended model selection — use recommend_model for that."
     }
   ]
 }
