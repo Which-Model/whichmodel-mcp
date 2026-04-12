@@ -23,6 +23,7 @@
     "@cfworker/json-schema": "^4.1.1",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@supabase/supabase-js": "^2.49.4",
+    "@which-model/whichmodel-core": "github:Which-Model/whichmodel-core",
     "express": "^5.1.0",
     "grammy": "^1.42.0",
     "zod": "^3.25.0"

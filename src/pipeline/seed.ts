@@ -7,7 +7,7 @@ import { getSupabaseServiceClient } from '../db/client.js';
 import { upsertModel } from '../db/models.js';
 import { fetchOpenRouterModels } from './openrouter.js';
 import { transformOpenRouterModel } from './transform.js';
-import { computeValueScore } from '../engine/value-score.js';
+import { computeValueScore } from '@which-model/whichmodel-core';
 import { INCLUDED_PROVIDER_PREFIXES } from './known-models.js';
 
 async function seed() {

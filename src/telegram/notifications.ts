@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSubscribersForEvent } from './db.js';
 import { notificationActionsKeyboard } from './keyboards.js';
-import type { PriceChange } from '../engine/types.js';
+import type { PriceChange } from '@which-model/whichmodel-core';
 
 const TELEGRAM_API = 'https://api.telegram.org';
 

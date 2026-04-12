@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { recommend } from '../../src/engine/recommendation.js';
+import { recommend } from '@which-model/whichmodel-core';
 import { SAMPLE_MODELS } from '../fixtures/sample-models.js';
-import type { RecommendationRequest } from '../../src/engine/types.js';
+import type { RecommendationRequest } from '@which-model/whichmodel-core';
 
 const FRESHNESS = '2026-04-01T00:00:00Z';
 

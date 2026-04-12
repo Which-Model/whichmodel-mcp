@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { PriceHistoryEntry, PriceChange } from '../engine/types.js';
+import type { PriceHistoryEntry, PriceChange } from '@which-model/whichmodel-core';
 
 export async function insertPriceChange(
   supabase: SupabaseClient,

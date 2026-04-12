@@ -1,4 +1,4 @@
-import type { OpenRouterModel, Model, ModelCapabilities, QualityTier } from '../engine/types.js';
+import type { OpenRouterModel, Model, ModelCapabilities, QualityTier } from '@which-model/whichmodel-core';
 import { KNOWN_MODEL_TIERS, inferTierFromPricing } from './known-models.js';
 
 /**

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { TASK_PROFILES } from '../../src/engine/task-profiles.js';
-import { TASK_TYPES } from '../../src/engine/types.js';
+import { TASK_PROFILES } from '@which-model/whichmodel-core';
+import { TASK_TYPES } from '@which-model/whichmodel-core';
 
 describe('TASK_PROFILES', () => {
   it('has a profile for every task type', () => {

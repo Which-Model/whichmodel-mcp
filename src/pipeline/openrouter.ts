@@ -1,4 +1,4 @@
-import type { OpenRouterModel } from '../engine/types.js';
+import type { OpenRouterModel } from '@which-model/whichmodel-core';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/models';
 

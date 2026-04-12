@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeValueScore } from '../../src/engine/value-score.js';
+import { computeValueScore } from '@which-model/whichmodel-core';
 import { SAMPLE_MODELS } from '../fixtures/sample-models.js';
 
 describe('computeValueScore()', () => {

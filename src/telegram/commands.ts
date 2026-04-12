@@ -2,9 +2,9 @@ import type { Context } from 'grammy';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getAllActiveModels, getDataFreshness } from '../db/models.js';
 import { getPriceChangesSince } from '../db/price-history.js';
-import { recommend } from '../engine/recommendation.js';
-import type { TaskType } from '../engine/types.js';
-import { TASK_TYPES } from '../engine/types.js';
+import { recommend } from '@which-model/whichmodel-core';
+import type { TaskType } from '@which-model/whichmodel-core';
+import { TASK_TYPES } from '@which-model/whichmodel-core';
 import {
   getTelegramUserByChatId,
   createTelegramUser,

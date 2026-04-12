@@ -1,4 +1,4 @@
-import type { Model } from '../../src/engine/types.js';
+import type { Model } from '@which-model/whichmodel-core';
 
 /**
  * Sample model data for offline tests.

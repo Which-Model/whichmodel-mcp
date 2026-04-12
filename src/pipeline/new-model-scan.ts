@@ -9,7 +9,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getAllModelsForPipeline, upsertModel } from '../db/models.js';
 import { fetchOpenRouterModels } from './openrouter.js';
 import { transformOpenRouterModel } from './transform.js';
-import { computeValueScore } from '../engine/value-score.js';
+import { computeValueScore } from '@which-model/whichmodel-core';
 import { INCLUDED_PROVIDER_PREFIXES } from './known-models.js';
 import { recordNewModelEvent } from '../db/price-history.js';
 

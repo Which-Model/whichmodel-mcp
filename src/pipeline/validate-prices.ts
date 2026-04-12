@@ -5,7 +5,7 @@
  * and flags discrepancies.
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Model } from '../engine/types.js';
+import type { Model } from '@which-model/whichmodel-core';
 
 export interface ValidationResult {
   modelsChecked: number;

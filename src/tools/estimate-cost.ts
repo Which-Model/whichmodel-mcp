@@ -2,7 +2,7 @@ import * as z from 'zod/v4';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getModelById, getModelsByFilter, getDataFreshness } from '../db/models.js';
-import type { Model, Capability } from '../engine/types.js';
+import type { Model, Capability } from '@which-model/whichmodel-core';
 import type { QueryCache } from '../cache.js';
 import type { ToolTracker } from '../observability.js';
 

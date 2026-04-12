@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { transformOpenRouterModel } from '../../src/pipeline/transform.js';
-import type { OpenRouterModel } from '../../src/engine/types.js';
+import type { OpenRouterModel } from '@which-model/whichmodel-core';
 
 const sampleRaw: OpenRouterModel = {
   id: 'anthropic/claude-sonnet-4',

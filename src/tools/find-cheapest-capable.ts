@@ -2,8 +2,8 @@ import * as z from 'zod/v4';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getModelsByFilter, getDataFreshness } from '../db/models.js';
-import type { Capability, QualityTier } from '../engine/types.js';
-import { QUALITY_TIER_SCORES } from '../engine/types.js';
+import type { Capability, QualityTier } from '@which-model/whichmodel-core';
+import { QUALITY_TIER_SCORES } from '@which-model/whichmodel-core';
 import type { QueryCache } from '../cache.js';
 import type { ToolTracker } from '../observability.js';
 

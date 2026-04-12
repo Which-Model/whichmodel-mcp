@@ -1,4 +1,4 @@
-import type { QualityTier } from '../engine/types.js';
+import type { QualityTier } from '@which-model/whichmodel-core';
 
 /**
  * Hand-curated quality tier assignments for well-known models.
